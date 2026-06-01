@@ -15,7 +15,10 @@ const spec = {
       'Las rutas `/api/admin/*` requieren autenticación JWT.',
     contact: { name: 'AnimeDB' },
   },
-  servers: [{ url: `http://localhost:${process.env.PORT || 3000}`, description: 'Local' }],
+  servers: [
+    { url: 'https://anime-backend-1-0v2p.onrender.com', description: 'Producción (Render)' },
+    { url: `http://localhost:${process.env.PORT || 3000}`, description: 'Local' },
+  ],
   components: {
     securitySchemes: {
       BearerAuth: {
@@ -302,7 +305,16 @@ const spec = {
 };
 
 /* ── HTML UI usando Swagger UI CDN ───────────────────────────────────────── */
+const RENDER_URL = 'https://anime-backend-1-0v2p.onrender.com';
+
 function swaggerHtml(baseUrl) {
+  // Si se sirve desde localhost usa el spec local (evita CORS);
+  // en cualquier otro entorno (Render u otro host) apunta al spec de producción.
+  const isLocal = baseUrl.includes('localhost') || baseUrl.includes('127.0.0.1');
+  const specUrl = isLocal
+    ? `${baseUrl}/api/docs/openapi.json`
+    : `${RENDER_URL}/api/docs/openapi.json`;
+
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -321,7 +333,7 @@ function swaggerHtml(baseUrl) {
   <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
   <script>
     SwaggerUIBundle({
-      url: '${baseUrl}/api/docs/openapi.json',
+      url: '${specUrl}',
       dom_id: '#swagger-ui',
       presets: [SwaggerUIBundle.presets.apis, SwaggerUIBundle.SwaggerUIStandalonePreset],
       layout: 'BaseLayout',
